@@ -1,0 +1,113 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/ai-email-assistant",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fcaa6dc1-94e4-4f3a-8cdd-44b86a251690",
+      "name": "Webhook",
+      "webhookId": "b9a60a33-f91f-44a5-aff4-202dd84c0f86"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an email assistant for a company.\nYour job is to:\n1) Classify the email.\n2) Decide the priority (Low, Medium, High).\n3) Generate a polite reply.\n\nYou ALWAYS respond in strict JSON with this exact format:\n\n{\n  \"category\": \"billing | support | complaint | question | other\",\n  \"priority\": \"Low | Medium | High\",\n  \"reply\": \"TEXT OF THE REPLY HERE\"\n}\n\nNever add explanations. \nRespond ONLY with valid JSON.\n"
+            },
+            {
+              "content": "=From: {{ $json.body.from }}\nSubject: {{ $json.body.subject }}\nBody: {{ $json.body.body }}\n\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e6c98d8e-e5d2-4537-9bd5-d9e3646c8b7a",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "mrK2fk7f7KtDjpB0",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the raw string from the OpenAI response\nconst raw = $json.output[0].content[0].text;\n\n// Parse it into a real JSON object\nconst parsed = JSON.parse(raw);\n\n// Return a new item where \"json\" is the parsed object\nreturn [\n  {\n    json: parsed,\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "716d0cb2-cf5c-4059-ab20-90568fcf0c75",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cf2700d8-cfa1-4eeb-8c5b-a380990f4fcd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ef63a3d75d25702c055e0787da9d09d88e865c04f07c30f332d9a51b0537e972"
+  },
+  "id": "z7WlkLnLxuXBU5tG",
+  "tags": []
+}
